@@ -1,41 +1,57 @@
-import { useState, useRef } from 'react';
-import QRCode from 'qrcode';
+import { useState, useEffect } from "react";
+import QRCode from "qrcode";
 
-function App() {
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [waLink, setWaLink] = useState('');
-  const canvasRef = useRef(null);
+export default function App() {
+  const [phone, setPhone] = useState("");
+  const [waLink, setWaLink] = useState("");
+  const [qrCode, setQrCode] = useState("");
 
-  const handleGenerate = async () => {
-    const link = `https://wa.me/${phoneNumber}`;
+  useEffect(() => {
+    if (waLink) {
+      QRCode.toDataURL(waLink)
+        .then(url => {
+          setQrCode(url);
+        })
+        .catch(err => console.error(err));
+    }
+  }, [waLink]);
+
+  const handleGenerate = () => {
+    const sanitizedPhone = phone.replace(/\D/g, ""); // elimina espacios, guiones, etc.
+    const link = `https://wa.me/${sanitizedPhone}`;
     setWaLink(link);
-    await QRCode.toCanvas(canvasRef.current, link, { width: 200 });
   };
 
   return (
-    <div style={{ padding: '2rem', fontFamily: 'Arial' }}>
-      <h1>Generador QR para WhatsApp</h1>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
+      <h1 className="text-2xl font-bold mb-4">Generador de QR para WhatsApp</h1>
+
       <input
-        type="tel"
-        placeholder="Ingresá un número"
-        value={phoneNumber}
-        onChange={(e) => setPhoneNumber(e.target.value)}
-        style={{ padding: '0.5rem', fontSize: '1rem', marginRight: '1rem' }}
+        type="text"
+        placeholder="Número de teléfono"
+        className="p-2 border border-gray-400 rounded w-full max-w-md mb-4"
+        value={phone}
+        onChange={(e) => setPhone(e.target.value)}
       />
-      <button onClick={handleGenerate} style={{ padding: '0.5rem 1rem' }}>
+
+      <button
+        onClick={handleGenerate}
+        className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded mb-4"
+      >
         Generar
       </button>
+
       {waLink && (
-        <div style={{ marginTop: '2rem' }}>
-          <p>Link generado:</p>
-          <a href={waLink} target="_blank" rel="noopener noreferrer">{waLink}</a>
-          <div style={{ marginTop: '1rem' }}>
-            <canvas ref={canvasRef} />
-          </div>
+        <div className="text-center">
+          <p className="mb-2 text-blue-600">
+            <a href={waLink} target="_blank" rel="noopener noreferrer">
+              {waLink}
+            </a>
+          </p>
+          {qrCode && <img src={qrCode} alt="QR Code de WhatsApp" className="mx-auto" />}
         </div>
       )}
     </div>
   );
 }
 
-export default App;

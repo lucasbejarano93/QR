@@ -1,33 +1,37 @@
-import { useState } from 'react';
-import QRCode from 'qrcode.react';
+import { useState, useRef } from 'react';
+import QRCode from 'qrcode';
 
 function App() {
-  const [phone, setPhone] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [waLink, setWaLink] = useState('');
+  const canvasRef = useRef(null);
 
-  const generateLink = () => {
-    if (phone) {
-      const cleanPhone = phone.replace(/[^0-9]/g, '');
-      setWaLink(`https://wa.me/${cleanPhone}`);
-    }
+  const handleGenerate = async () => {
+    const link = `https://wa.me/${phoneNumber}`;
+    setWaLink(link);
+    await QRCode.toCanvas(canvasRef.current, link, { width: 200 });
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: 'auto', padding: 20, fontFamily: 'Arial' }}>
-      <h2>Generador de QR para WhatsApp</h2>
+    <div style={{ padding: '2rem', fontFamily: 'Arial' }}>
+      <h1>Generador QR para WhatsApp</h1>
       <input
-        type="text"
-        placeholder="Ingresá número de teléfono"
-        value={phone}
-        onChange={(e) => setPhone(e.target.value)}
-        style={{ width: '100%', padding: 10, marginBottom: 10 }}
+        type="tel"
+        placeholder="Ingresá un número"
+        value={phoneNumber}
+        onChange={(e) => setPhoneNumber(e.target.value)}
+        style={{ padding: '0.5rem', fontSize: '1rem', marginRight: '1rem' }}
       />
-      <button onClick={generateLink} style={{ width: '100%', padding: 10 }}>Generar</button>
-
+      <button onClick={handleGenerate} style={{ padding: '0.5rem 1rem' }}>
+        Generar
+      </button>
       {waLink && (
-        <div style={{ marginTop: 20, textAlign: 'center' }}>
-          <p><a href={waLink} target="_blank" rel="noopener noreferrer">{waLink}</a></p>
-          <QRCode value={waLink} size={200} />
+        <div style={{ marginTop: '2rem' }}>
+          <p>Link generado:</p>
+          <a href={waLink} target="_blank" rel="noopener noreferrer">{waLink}</a>
+          <div style={{ marginTop: '1rem' }}>
+            <canvas ref={canvasRef} />
+          </div>
         </div>
       )}
     </div>
